@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GitHub-Jira Link Options</title>
+  </head>
+  <body>
+    <ul id="currentProjects"></ul>
+    <form>
+      <p><b>Add new project</b></p>
+      <label for="gitHubOrganization">gitHubOrganization</label>
+      <input type="text" id="gitHubOrganization" /> <br />
+      <label for="gitHubRepo">gitHubRepo</label>
+      <input type="text" id="gitHubRepo" /> <br />
+      <label for="jiraOrganization"> jiraOrganization</label>
+      <input type="text" id="jiraOrganization" /> <br />
+      <label for="jiraPrefix">jiraPrefix</label>
+      <input type="text" id="jiraPrefix" /> <br />
+
+      <div id="status"></div>
+      <button id="save" disabled>Save</button>
+    </form>
+
+    <script src="options.js"></script>
+  </body>
+</html>

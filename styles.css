@@ -1,0 +1,24 @@
+#gitHubJiraLink__span {
+  background-color: #0646a5;
+  border-radius: 3px;
+  line-height: 20px;
+  text-align: center;
+  display: inline-block;
+}
+
+#gitHubJiraLink__a {
+  color: #deebff !important;
+  font-weight: 600;
+  padding: 4px 8px;
+  display: inline-block;
+}
+
+#gitHubJiraLink__span:hover,
+#gitHubJiraLink__span:focus {
+  background-color: #2463cd;
+}
+
+#gitHubJiraLink__a:hover,
+#gitHubJiraLink__a:focus {
+  text-decoration: none;
+}

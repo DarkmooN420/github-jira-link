@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "GitHub-Jira Link",
+  "version": "0.1",
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*", "https://www.github.com/*"],
+      "css": ["styles.css"],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["activeTab", "storage"],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  }
+}
