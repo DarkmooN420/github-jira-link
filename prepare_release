@@ -1,0 +1,18 @@
+#!/bin/bash
+
+rm -rf chrome/
+rm -rf firefox/
+
+mkdir firefox
+cp ./* firefox/
+rm -f firefox/prepare_release
+
+mkdir chrome
+cp ./* chrome/
+rm -f chrome/prepare_release
+rm -f chrome/manifest.json
+sed '17,24d' firefox/manifest.json | tee -a chrome/manifest.json
+echo "  }" >> chrome/manifest.json
+echo "}" >> chrome/manifest.json
+echo "" >> chrome/manifest.json
+echo "DONE"
