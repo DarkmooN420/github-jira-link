@@ -7,13 +7,13 @@ try {
 
 function saveOptions(e) {
   e.preventDefault();
-  client.storage.sync.get({ projects: '[]' }, function(options) {
+  client.storage.sync.get({ projects: '[]' }, options => {
     const { projects } = options;
     const projectsParsed = JSON.parse(projects);
     projectsParsed.push(getProject());
     client.storage.sync.set(
       { projects: JSON.stringify(projectsParsed) },
-      function() {
+      () => {
         displayMessage('Project saved.');
         getOptions();
         clearInputs();
@@ -23,7 +23,7 @@ function saveOptions(e) {
 }
 
 function getOptions() {
-  client.storage.sync.get({ projects: '[]' }, function(options) {
+  client.storage.sync.get({ projects: '[]' }, options => {
     const { projects } = options;
     projectsParsed = JSON.parse(projects);
     const currentProjects = document.querySelector('#currentProjects');
@@ -33,7 +33,7 @@ function getOptions() {
       bEl.innerHTML = 'My projects';
       currentProjects.appendChild(bEl);
     }
-    projectsParsed.forEach(function(project, idx) {
+    projectsParsed.forEach((project, idx) => {
       const liEl = document.createElement('li');
 
       const pEl = document.createElement('p');
@@ -50,7 +50,9 @@ function getOptions() {
       const ulEl = document.createElement('ul');
       for (attribute in project) {
         const innerLiEl = document.createElement('li');
-        innerLiEl.innerHTML = `${attribute}: ${project[attribute]}`;
+        innerLiEl.innerHTML = `${convertCamelCase(attribute)}: <i>${
+          project[attribute]
+        }</i>`;
         ulEl.appendChild(innerLiEl);
       }
       liEl.appendChild(ulEl);
@@ -62,14 +64,14 @@ function getOptions() {
 
 function handleDeleteProject(idx) {
   return function() {
-    client.storage.sync.get({ projects: '[]' }, function(options) {
+    client.storage.sync.get({ projects: '[]' }, options => {
       const { projects } = options;
       projectsParsed = JSON.parse(projects);
       projectsParsed.splice(idx, 1);
 
       client.storage.sync.set(
         { projects: JSON.stringify(projectsParsed) },
-        function() {
+        () => {
           displayMessage('Project deleted.');
           getOptions();
         }
@@ -87,7 +89,7 @@ const INPUTS = [
 
 function getInputs() {
   const inputs = {};
-  INPUTS.forEach(function(input) {
+  INPUTS.forEach(input => {
     inputs[input] = document.querySelector(`#${input}`);
   });
   return inputs;
@@ -105,7 +107,7 @@ function getProject() {
 function displayMessage(message) {
   const status = document.querySelector('#status');
   status.textContent = 'Project saved.';
-  setTimeout(function() {
+  setTimeout(() => {
     status.textContent = '';
   }, 1500);
 }
@@ -117,6 +119,20 @@ function clearInputs() {
     const saveButton = document.querySelector('#save');
     saveButton.disabled = true;
   }
+}
+
+function convertCamelCase(string) {
+  // Adapted from https://stackoverflow.com/questions/30521224/javascript-convert-pascalcase-to-underscore-case
+  const camelCaseString = string
+    .replace(/(?:^|\.?)([A-Z])/g, (x, y) => {
+      return '_' + y.toLowerCase();
+    })
+    .replace(/^_/, '');
+  return camelCaseString
+    .split('_')
+    .map(word => word[0].toUpperCase() + word.slice(1))
+    .join(' ')
+    .replace('Git Hub', 'GitHub');
 }
 
 window.onload = getOptions;
