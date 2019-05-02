@@ -14,5 +14,10 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
+  },
+  "applications": {
+    "gecko": {
+      "id": "github-jira@link"
+    }
   }
 }
