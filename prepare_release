@@ -7,7 +7,7 @@
   rm -f firefox/README.md firefox/README_chrome.md firefox/.gitignore
   mv firefox/README_firefox.md firefox/README.md
   rm -f firefox/prepare_release
-  zip github-jira-link-firefox.zip firefox/
+  zip -r github-jira-link-firefox.zip firefox/
 
   mkdir chrome
   cp ./* chrome/
@@ -19,7 +19,7 @@
   echo "  }" >> chrome/manifest.json
   echo "}" >> chrome/manifest.json
   echo "" >> chrome/manifest.json
-  zip github-jira-link-chrome.zip chrome/
+  zip -r github-jira-link-chrome.zip chrome/
 } >& /dev/null
 echo "🎉 Chrome release created in ./chrome/"
 echo "🎉 Firefox release created in ./firefox/"
