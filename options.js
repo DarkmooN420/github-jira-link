@@ -7,6 +7,8 @@ try {
 
 function saveOptions(e) {
   e.preventDefault();
+  const saveButton = document.querySelector('#save');
+  if (saveButton.getAttribute('class') === 'button__save--disabled') return;
   client.storage.sync.get({ projects: '[]' }, options => {
     const { projects } = options;
     const projectsParsed = JSON.parse(projects);
@@ -14,7 +16,6 @@ function saveOptions(e) {
     client.storage.sync.set(
       { projects: JSON.stringify(projectsParsed) },
       () => {
-        displayMessage('Project saved.');
         getOptions();
         clearInputs();
       }
@@ -29,30 +30,35 @@ function getOptions() {
     const currentProjects = document.querySelector('#currentProjects');
     currentProjects.innerHTML = '';
     if (projectsParsed.length) {
-      bEl = document.createElement('b');
-      bEl.innerHTML = 'My projects';
-      currentProjects.appendChild(bEl);
+      h2El = document.createElement('h2');
+      h2El.innerHTML = 'My projects';
+      currentProjects.appendChild(h2El);
     }
     projectsParsed.forEach((project, idx) => {
       const liEl = document.createElement('li');
+      liEl.setAttribute('class', 'li--projectWrapper');
 
-      const pEl = document.createElement('p');
+      const divEl = document.createElement('div');
+      divEl.setAttribute('class', 'div--project');
       const spanEl = document.createElement('span');
-      spanEl.innerHTML = `Project ${idx + 1} `;
+      spanEl.innerHTML = `Project ${idx + 1}`;
       const deleteButtonEl = document.createElement('button');
       deleteButtonEl.onclick = handleDeleteProject(idx);
-      deleteButtonEl.innerHTML = 'x';
-      pEl.appendChild(spanEl);
-      pEl.appendChild(deleteButtonEl);
+      deleteButtonEl.innerHTML = '&times;';
+      deleteButtonEl.setAttribute('class', 'button--delete');
+      divEl.appendChild(spanEl);
+      divEl.appendChild(deleteButtonEl);
 
-      liEl.appendChild(pEl);
+      liEl.appendChild(divEl);
 
       const ulEl = document.createElement('ul');
+      ulEl.setAttribute('class', 'ul--project');
       for (attribute in project) {
         const innerLiEl = document.createElement('li');
-        innerLiEl.innerHTML = `${convertCamelCase(attribute)}: <i>${
-          project[attribute]
-        }</i>`;
+        innerLiEl.innerHTML = `<p class="ul__p ul__p--attributeName">${convertCamelCase(
+          attribute
+        )}</p><class="ul__p ul__p--attribute">${project[attribute]}</p>`;
+        innerLiEl.setAttribute('class', 'li--projectItem');
         ulEl.appendChild(innerLiEl);
       }
       liEl.appendChild(ulEl);
@@ -71,10 +77,7 @@ function handleDeleteProject(idx) {
 
       client.storage.sync.set(
         { projects: JSON.stringify(projectsParsed) },
-        () => {
-          displayMessage('Project deleted.');
-          getOptions();
-        }
+        getOptions
       );
     });
   };
@@ -104,20 +107,12 @@ function getProject() {
   return project;
 }
 
-function displayMessage(message) {
-  const status = document.querySelector('#status');
-  status.textContent = 'Project saved.';
-  setTimeout(() => {
-    status.textContent = '';
-  }, 1500);
-}
-
 function clearInputs() {
   const inputs = getInputs();
   for (let inputName in inputs) {
     inputs[inputName].value = '';
     const saveButton = document.querySelector('#save');
-    saveButton.disabled = true;
+    saveButton.setAttribute('class', 'button__save--disabled');
   }
 }
 
@@ -142,9 +137,9 @@ const inputsArray = Object.values(getInputs());
 function checkEveryInput() {
   const saveButton = document.querySelector('#save');
   if (inputsArray.every(otherInput => otherInput.value)) {
-    saveButton.disabled = false;
+    saveButton.setAttribute('class', '');
   } else {
-    saveButton.disabled = true;
+    saveButton.setAttribute('class', 'button__save--disabled');
   }
 }
 inputsArray.forEach(input => {

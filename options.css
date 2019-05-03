@@ -1,0 +1,143 @@
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  color: #24292e;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 0 5px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#save {
+  border-radius: 3px;
+  padding: 12px 20px;
+  background-color: #0646a5;
+  color: #deebff;
+  font-size: 14px;
+}
+
+#save:hover,
+#save:focus {
+  background-color: #2463cd;
+}
+
+#save.button__save--disabled {
+  background-color: #999999;
+  cursor: not-allowed;
+  color: #ffffff;
+}
+
+.button--delete {
+  background-color: #a50000;
+  color: #ffffff;
+  border-radius: 100%;
+  font-size: 20px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.button--delete:hover,
+.button--delete:focus {
+  background-color: #d30000;
+}
+
+ul,
+li {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.div--project {
+  font-weight: 400;
+  font-size: 16px;
+  margin: 16px 0 5px 0;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.ul--project {
+  border: 1px solid #d1d5da;
+  border-radius: 3px;
+  background-color: #f6f8fa;
+}
+
+.li--projectItem {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 8px 0 8px;
+  border-top: 1px solid #e1e4e8;
+  margin-top: -1px;
+  border-top: 1px solid #e1e4e8;
+  list-style-type: none;
+  margin-top: -1px;
+}
+
+.li--projectItem:first-of-type {
+  border-top-color: transparent;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+.li--projectItem:last-of-type {
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+
+.ul__p {
+  padding: 0;
+  margin: 0;
+}
+
+.ul__p--attributeName {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+input {
+  background-color: #fafbfc;
+  margin: 5px 0px 15px 0;
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  border: 1px solid #d1d5da;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(27, 31, 35, 0.075);
+  color: #24292e;
+  line-height: 20px;
+  outline: none;
+  padding: 6px 8px;
+  vertical-align: middle;
+  width: 100%;
+}
+
+input:focus {
+  background-color: #ffffff;
+  border-color: #2188ff;
+  box-shadow: inset 0 1px 2px rgba(27, 31, 35, 0.075),
+    0 0 0 0.2em rgba(3, 102, 214, 0.3);
+  outline: none;
+}
+
+label {
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 400;
+}
