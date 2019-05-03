@@ -28,29 +28,34 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
           '.commit-ref.css-truncate.user-select-contain.expandable.head-ref'
         );
       const branchName = branchNameSpan && branchNameSpan.getAttribute('title');
-      const maybeJiraNumber = branchName && branchName.split('/').slice(-1)[0];
-      const jiraNumber =
-        maybeJiraNumber &&
-        maybeJiraNumber.slice(0, coveredProject.jiraPrefix.length) ===
-          coveredProject.jiraPrefix &&
-        maybeJiraNumber;
 
-      if (!jiraNumber) return;
+      const jiraNumbers =
+        branchName &&
+        branchName
+          .split('/')
+          .filter(
+            fragment =>
+              fragment.slice(0, coveredProject.jiraPrefix.length) ===
+              coveredProject.jiraPrefix
+          );
 
-      const jiraUrl = `https://${
-        coveredProject.jiraOrganization
-      }.atlassian.net/browse/${jiraNumber}`;
+      if (!jiraNumbers.length) return;
+      jiraNumbers.forEach(jiraNumber => {
+        const jiraUrl = `https://${
+          coveredProject.jiraOrganization
+        }.atlassian.net/browse/${jiraNumber}`;
 
-      const aEl = document.createElement('a');
-      aEl.setAttribute('id', 'gitHubJiraLink__a');
-      aEl.setAttribute('href', jiraUrl);
-      aEl.setAttribute('target', '_blank');
-      aEl.innerHTML = `JIRA ${jiraNumber}`;
-      const spanEl = document.createElement('span');
-      spanEl.setAttribute('id', 'gitHubJiraLink__span');
-      spanEl.appendChild(aEl);
+        const aEl = document.createElement('a');
+        aEl.setAttribute('id', 'gitHubJiraLink__a');
+        aEl.setAttribute('href', jiraUrl);
+        aEl.setAttribute('target', '_blank');
+        aEl.innerHTML = `JIRA ${jiraNumber}`;
+        const spanEl = document.createElement('span');
+        spanEl.setAttribute('id', 'gitHubJiraLink__span');
+        spanEl.appendChild(aEl);
 
-      tableObjectItem.appendChild(spanEl);
+        tableObjectItem.appendChild(spanEl);
+      });
     }
   };
 
