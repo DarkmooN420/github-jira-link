@@ -1,20 +1,25 @@
 #!/bin/bash
 {
-rm -rf chrome/
-rm -rf firefox/
+  rm -rf chrome/ firefox/ github-jira-link-firefox.zip github-jira-link-chrome.zip
 
-mkdir firefox
-cp ./* firefox/
-rm -f firefox/prepare_release
+  mkdir firefox
+  cp ./* firefox/
+  rm -f firefox/README.md firefox/README_chrome.md firefox/.gitignore
+  mv firefox/README_firefox.md firefox/README.md
+  rm -f firefox/prepare_release
+  zip github-jira-link-firefox.zip firefox/
 
-mkdir chrome
-cp ./* chrome/
-rm -f chrome/prepare_release
-rm -f chrome/manifest.json
-sed '17,24d' firefox/manifest.json | tee -a chrome/manifest.json
-echo "  }" >> chrome/manifest.json
-echo "}" >> chrome/manifest.json
-echo "" >> chrome/manifest.json
+  mkdir chrome
+  cp ./* chrome/
+  rm -f chrome/README.md chrome/README_firefox.md chrome/.gitignore
+  mv chrome/README_chrome.md chrome/README.md
+  rm -f chrome/prepare_release
+  rm -f chrome/manifest.json
+  sed '17,24d' firefox/manifest.json | tee -a chrome/manifest.json
+  echo "  }" >> chrome/manifest.json
+  echo "}" >> chrome/manifest.json
+  echo "" >> chrome/manifest.json
+  zip github-jira-link-chrome.zip chrome/
 } >& /dev/null
 echo "🎉 Chrome release created in ./chrome/"
 echo "🎉 Firefox release created in ./firefox/"
