@@ -35,8 +35,9 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
           .split('/')
           .filter(
             fragment =>
-              fragment.slice(0, coveredProject.jiraPrefix.length) ===
-              coveredProject.jiraPrefix
+              fragment
+                .slice(0, coveredProject.jiraPrefix.length)
+                .toUpperCase() === coveredProject.jiraPrefix.toUpperCase()
           );
 
       if (!jiraNumbers.length) return;
@@ -49,7 +50,7 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
         aEl.setAttribute('id', 'gitHubJiraLink__a');
         aEl.setAttribute('href', jiraUrl);
         aEl.setAttribute('target', '_blank');
-        aEl.innerHTML = `JIRA ${jiraNumber}`;
+        aEl.innerHTML = `JIRA ${jiraNumber.toUpperCase()}`;
         const spanEl = document.createElement('span');
         spanEl.setAttribute('id', 'gitHubJiraLink__span');
         spanEl.appendChild(aEl);
