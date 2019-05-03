@@ -2,7 +2,7 @@
 
 ## Installation
 
-## Chrome
+### Chrome
 
 1. Clone this repo.
 1. From this directory, run `./prepare_release` to create Chrome and Firefox release.
@@ -18,7 +18,7 @@
 1. Enter the Jira ticket prefix (the letters before `-` in the ticket number).
 1. Click 'Save'.
 
-## Firefox
+### Firefox
 
 1. Clone this repo.
 1. From this directory, run `./prepare_release` to create Chrome and Firefox release.
