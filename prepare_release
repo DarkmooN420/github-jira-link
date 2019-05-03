@@ -4,14 +4,14 @@
 
   mkdir firefox
   cp ./* firefox/
-  rm -f firefox/README.md firefox/README_chrome.md firefox/.gitignore
+  rm -f firefox/README.md firefox/README_chrome.md firefox/.gitignore firefox/github-jira-link-firefox.zip firefox/github-jira-link-chrome.zip
   mv firefox/README_firefox.md firefox/README.md
   rm -f firefox/prepare_release
   zip -r github-jira-link-firefox.zip firefox/
 
   mkdir chrome
   cp ./* chrome/
-  rm -f chrome/README.md chrome/README_firefox.md chrome/.gitignore
+  rm -f chrome/README.md chrome/README_firefox.md chrome/.gitignore chrome/github-jira-link-firefox.zip chrome/github-jira-link-chrome.zip
   mv chrome/README_chrome.md chrome/README.md
   rm -f chrome/prepare_release
   rm -f chrome/manifest.json
