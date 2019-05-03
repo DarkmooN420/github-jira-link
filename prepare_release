@@ -1,5 +1,5 @@
 #!/bin/bash
-
+{
 rm -rf chrome/
 rm -rf firefox/
 
@@ -15,4 +15,6 @@ sed '17,24d' firefox/manifest.json | tee -a chrome/manifest.json
 echo "  }" >> chrome/manifest.json
 echo "}" >> chrome/manifest.json
 echo "" >> chrome/manifest.json
-echo "DONE"
+} >& /dev/null
+echo "🎉 Chrome release created in ./chrome/"
+echo "🎉 Firefox release created in ./firefox/"
