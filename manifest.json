@@ -1,7 +1,11 @@
 {
   "manifest_version": 2,
+  "description": "Adds link to Jira ticket on GitHub pull request page",
   "name": "GitHub-Jira Link",
   "version": "0.1",
+  "icons": {
+    "128": "icon_128.png"
+  },
   "content_scripts": [
     {
       "matches": ["https://github.com/*", "https://www.github.com/*"],
