@@ -1,25 +1,20 @@
 #!/bin/bash
 {
-  rm -rf chrome/ firefox/ github-jira-link-firefox.zip github-jira-link-chrome.zip
+  rm -rf chrome/ firefox/ github-jira-link-firefox.0.1.zip github-jira-link-chrome.0.1.zip
 
   mkdir firefox
-  cp ./* firefox/
-  rm -f firefox/README.md firefox/README_chrome.md firefox/.gitignore firefox/github-jira-link-firefox.*.zip firefox/github-jira-link-chrome.*.zip
+  cp contentScript.js icon_128.png manifest.json options.css options.html options.js styles.css README_firefox.md firefox/
   mv firefox/README_firefox.md firefox/README.md
-  rm -f firefox/prepare_release
-  zip -r github-jira-link-firefox.0.1.zip firefox/
+  zip -r github-jira-link-firefox.0.1.zip firefox
 
   mkdir chrome
-  cp ./* chrome/
-  rm -f chrome/README.md chrome/README_firefox.md chrome/.gitignore chrome/github-jira-link-firefox.*.zip chrome/github-jira-link-chrome.*.zip
+  cp contentScript.js icon_128.png manifest.json options.css options.html options.js styles.css README_chrome.md chrome/
   mv chrome/README_chrome.md chrome/README.md
-  rm -f chrome/prepare_release
-  rm -f chrome/manifest.json
-  sed '17,24d' firefox/manifest.json | tee -a chrome/manifest.json
+  sed '21,28d' firefox/manifest.json | tee -a chrome/manifest.json
   echo "  }" >> chrome/manifest.json
   echo "}" >> chrome/manifest.json
   echo "" >> chrome/manifest.json
-  zip -r github-jira-link-chrome.0.1.zip chrome/
+  zip -r github-jira-link-chrome.0.1.zip chrome
 } >& /dev/null
 echo "🎉 Chrome release created in ./chrome/"
 echo "🎉 Firefox release created in ./firefox/"
