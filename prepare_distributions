@@ -1,13 +1,13 @@
 #!/bin/bash
 {
-  rm -rf chrome/ firefox/ distributions/ github-jira-link-firefox.0.1.zip github-jira-link-chrome.0.1.zip
+  rm -rf chrome/ firefox/ distributions/ github-jira-link-firefox.zip github-jira-link-chrome.zip
 
   mkdir distributions/
 
   mkdir firefox
   cp contentScript.js icon_128.png icon_32.png icon_16.png manifest.json options.css options.html options.js styles.css README_firefox.md firefox/
   cd firefox
-  zip -r ../distributions/github-jira-link-firefox.0.1.zip *
+  zip -r ../distributions/github-jira-link-firefox.zip *
   cd ..
 
   mkdir chrome
@@ -17,7 +17,7 @@
   echo "}" >> chrome/manifest.json
   echo "" >> chrome/manifest.json
   cd chrome
-  zip -r ../distributions/github-jira-link-chrome.0.1.zip *
+  zip -r ../distributions/github-jira-link-chrome.zip *
   cd ..
 } >& /dev/null
 echo "🎉 Chrome distribution created"
