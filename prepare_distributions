@@ -4,7 +4,7 @@
 
   mkdir firefox
   cp contentScript.js icon_128.png manifest.json options.css options.html options.js styles.css README_firefox.md firefox/
-  zip -r github-jira-link-firefox.0.1.zip firefox
+  zip -r distributions/github-jira-link-firefox.0.1.zip firefox
 
   mkdir chrome
   cp contentScript.js icon_128.png options.css options.html options.js styles.css README_chrome.md chrome/
@@ -12,7 +12,7 @@
   echo "  }" >> chrome/manifest.json
   echo "}" >> chrome/manifest.json
   echo "" >> chrome/manifest.json
-  zip -r github-jira-link-chrome.0.1.zip chrome
+  zip -r distributions/github-jira-link-chrome.0.1.zip chrome
 } >& /dev/null
 echo "🎉 Chrome distribution created"
 echo "🎉 Firefox distribution created"
