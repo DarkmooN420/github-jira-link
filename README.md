@@ -6,20 +6,8 @@ GitHub-Jira Link is a Chrome and Firefox extension that uses the branch name on 
 
 ## Setup
 
-### Chrome
-
 1. Click on the GitHub-Jira-Link icon next to the address bar.
-1. Click 'Options'.
-1. Enter your GitHub organization name (the string after `github.com/` in a pull request URL).
-1. Enter your GitHub repo name (the string after the GitHub organization name in a pull request URL).
-1. Enter your Jira organization name (the string before `.atlassian.net` in a Jira ticket URL).
-1. Enter the Jira ticket prefix (the letters before `-` in the ticket number).
-1. Click 'Save'.
-
-### Firefox
-
-1. Go to `about:addons`.
-1. Click 'Preferences' for the GitHub-Jira Link extension.
+1. In Chrome, click 'Options'. In Firefox, you will immediately see the options pop-up.
 1. Enter your GitHub organization name (the string after `github.com/` in a pull request URL).
 1. Enter your GitHub repo name (the string after the GitHub organization name in a pull request URL).
 1. Enter your Jira organization name (the string before `.atlassian.net` in a Jira ticket URL).
