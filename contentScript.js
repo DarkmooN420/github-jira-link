@@ -40,7 +40,7 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
                 .toUpperCase() === coveredProject.jiraPrefix.toUpperCase()
           );
 
-      if (!jiraNumbers.length) return;
+      if (!jiraNumbers || !jiraNumbers.length) return;
       jiraNumbers.forEach(jiraNumber => {
         const jiraUrl = `https://${
           coveredProject.jiraOrganization

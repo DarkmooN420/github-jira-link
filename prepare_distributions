@@ -14,5 +14,5 @@
   echo "" >> chrome/manifest.json
   zip -r github-jira-link-chrome.0.1.zip chrome
 } >& /dev/null
-echo "🎉 Chrome release created in ./chrome/"
-echo "🎉 Firefox release created in ./firefox/"
+echo "🎉 Chrome distribution created"
+echo "🎉 Firefox distribution created"
