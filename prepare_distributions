@@ -2,20 +2,22 @@
 {
   rm -rf chrome/ firefox/ distributions/ github-jira-link-firefox.zip github-jira-link-chrome.zip
 
+  node prepareManifest.js
+
   mkdir distributions/
 
   mkdir firefox
-  cp contentScript.js icon_128.png icon_32.png icon_16.png manifest.json options.css options.html options.js styles.css README_firefox.md firefox/
+  cp contentScript.js icon_128.png icon_32.png icon_16.png manifest.json options.css options.html options.js styles.css manifest_firefox.json firefox/
+  rm -f manifest_firefox.json
+  mv firefox/manifest_firefox.json firefox/manifest.json
   cd firefox
   zip -r ../distributions/github-jira-link-firefox.zip *
   cd ..
 
   mkdir chrome
-  cp contentScript.js icon_128.png options.css options.html options.js styles.css README_chrome.md chrome/
-  sed '21,36d' firefox/manifest.json | tee -a chrome/manifest.json
-  echo "  }" >> chrome/manifest.json
-  echo "}" >> chrome/manifest.json
-  echo "" >> chrome/manifest.json
+  cp contentScript.js icon_128.png icon_32.png icon_16.png options.css options.html options.js styles.css manifest_chrome.json chrome/
+  rm -f manifest_chrome.json
+  mv chrome/manifest_chrome.json chrome/manifest.json
   cd chrome
   zip -r ../distributions/github-jira-link-chrome.zip *
   cd ..
