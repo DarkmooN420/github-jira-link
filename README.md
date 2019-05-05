@@ -13,3 +13,7 @@ GitHub-Jira Link is a Chrome and Firefox extension that uses the branch name on 
 1. Enter your Jira organization name (the string before `.atlassian.net` in a Jira ticket URL).
 1. Enter the Jira ticket prefix (the letters before `-` in the ticket number).
 1. Click 'Save'.
+
+## [Contributing](./CONTRIBUTING.md)
+
+## [License](./LICENSE)
