@@ -4,12 +4,10 @@
 
   mkdir firefox
   cp contentScript.js icon_128.png manifest.json options.css options.html options.js styles.css README_firefox.md firefox/
-  mv firefox/README_firefox.md firefox/README.md
   zip -r github-jira-link-firefox.0.1.zip firefox
 
   mkdir chrome
   cp contentScript.js icon_128.png options.css options.html options.js styles.css README_chrome.md chrome/
-  mv chrome/README_chrome.md chrome/README.md
   sed '21,28d' firefox/manifest.json | tee -a chrome/manifest.json
   echo "  }" >> chrome/manifest.json
   echo "}" >> chrome/manifest.json
