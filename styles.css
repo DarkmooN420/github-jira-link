@@ -1,13 +1,24 @@
-#gitHubJiraLink__span {
+#gitHubJiraLink__span,
+.gitHubJiraLink__span {
   background-color: #0646a5;
   border-radius: 3px;
-  line-height: 20px;
   text-align: center;
   display: inline-block;
+}
+
+#gitHubJiraLink__span {
+  line-height: 20px;
   padding: 0 5px;
 }
 
-#gitHubJiraLink__a {
+.gitHubJiraLink__span {
+  line-height: 11px;
+  padding: 0 2px;
+  font-size: 12px;
+}
+
+#gitHubJiraLink__a,
+.gitHubJiraLink__a {
   color: #ffffff !important;
   font-weight: 600;
   padding: 4px 4px;
@@ -15,11 +26,15 @@
 }
 
 #gitHubJiraLink__span:hover,
-#gitHubJiraLink__span:focus {
+#gitHubJiraLink__span:focus,
+.gitHubJiraLink__span:hover,
+.gitHubJiraLink__span:focus {
   background-color: #2463cd;
 }
 
 #gitHubJiraLink__a:hover,
-#gitHubJiraLink__a:focus {
+#gitHubJiraLink__a:focus,
+.gitHubJiraLink__a:hover,
+.gitHubJiraLink__a:focus {
   text-decoration: none;
 }
