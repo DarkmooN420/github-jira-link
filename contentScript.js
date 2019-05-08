@@ -155,21 +155,6 @@ function handlePrListLinks(prLinks, projectsParsed) {
         return Promise.resolve();
       }
 
-      const hrefArr = getHrefArr();
-      const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-      const regex = getRegex(coveredProject.jiraPrefix);
-      const jiraNumbersFromInnerHtml = prLink.innerHTML.match(regex);
-      const jiraLinksFromInnerHtml = getJiraLinksFromJiraNumbers(
-        jiraNumbersFromInnerHtml,
-        'class',
-        coveredProject
-      );
-      if (jiraLinksFromInnerHtml.length) {
-        jiraLinkCache.set(href, jiraLinksFromInnerHtml);
-        insertJiraLinks(jiraLinksFromInnerHtml, prLink);
-        return Promise.resolve();
-      }
-
       return fetch(`https://github.com${href}`).then(response => {
         response.text().then(responseText => {
           const htmlDoc = parser.parseFromString(responseText, 'text/html');
