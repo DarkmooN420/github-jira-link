@@ -5,95 +5,69 @@ try {
   client = browser;
 }
 
-const hrefFilterSet = new Set([
-  'https:',
-  'http:',
-  '',
-  'www.github.com',
-  'github.com',
-]);
-
-function getHrefArr() {
-  return window.location.href
-    .split('/')
-    .filter(string => !hrefFilterSet.has(string));
-}
-
 const parser = new DOMParser();
 
-const fetchedPrs = {};
+gitHubJiraLinkA = 'gitHubJiraLink__a';
+gitHubJiraLinkAId = `#${gitHubJiraLinkA}`;
+gitHubJiraLinkAClass = `.${gitHubJiraLinkA}`;
+
+gitHubJiraLinkSpan = 'gitHubJiraLink__span';
+gitHubJiraLinkSpanId = `#${gitHubJiraLinkSpan}`;
+gitHubJiraLinkSpanClass = `.${gitHubJiraLinkSpan}`;
+
+const headerId = '#partial-discussion-header';
+const prInfoClass = '.TableObject-item--primary';
+const branchNameSpanClass =
+  '.commit-ref.css-truncate.user-select-contain.expandable.head-ref';
+const prLinksClass =
+  '.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open';
+
+const jiraLinkCache = new Map();
 
 client.storage.sync.get({ projects: '[]' }, function(options) {
   const { projects } = options;
   const projectsParsed = JSON.parse(projects);
-  const mainScript = () => {
+  async function mainScript() {
     const hrefArr = getHrefArr();
     const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-    if (
-      hrefArr[2] === 'pull' &&
-      coveredProject &&
-      !document.querySelector('#gitHubJiraLink__a')
-    ) {
-      const partialDiscussionHeader = document.querySelector(
-        '#partial-discussion-header'
-      );
-      const tableObjectItem =
-        partialDiscussionHeader &&
-        partialDiscussionHeader.querySelector('.TableObject-item--primary');
-      const branchNameSpan =
-        tableObjectItem &&
-        tableObjectItem.querySelector(
-          '.commit-ref.css-truncate.user-select-contain.expandable.head-ref'
-        );
-      const branchName = branchNameSpan && branchNameSpan.getAttribute('title');
-
-      const jiraNumbers =
-        branchName &&
-        branchName
-          .split('/')
-          .filter(
-            fragment =>
-              fragment
-                .slice(0, coveredProject.jiraPrefix.length)
-                .toUpperCase() === coveredProject.jiraPrefix.toUpperCase()
-          );
-
-      if (!jiraNumbers || !jiraNumbers.length) return;
-      jiraNumbers.forEach(jiraNumber => {
-        const jiraUrl = `https://${
-          coveredProject.jiraOrganization
-        }.atlassian.net/browse/${jiraNumber}`;
-
-        const aEl = document.createElement('a');
-        aEl.setAttribute('id', 'gitHubJiraLink__a');
-        aEl.setAttribute('href', jiraUrl);
-        aEl.setAttribute('target', '_blank');
-        aEl.innerHTML = `JIRA ${jiraNumber.toUpperCase()}`;
-        const spanEl = document.createElement('span');
-        spanEl.setAttribute('id', 'gitHubJiraLink__span');
-        spanEl.appendChild(aEl);
-
-        tableObjectItem.appendChild(spanEl);
-      });
-    } else if (
-      hrefArr[2] === 'pulls' &&
-      coveredProject &&
-      !document.querySelector('.gitHubJiraLink__a')
-    ) {
-      const navigationContainer = document.querySelector(
-        '.js-navigation-container.js-active-navigation-container'
-      );
-      const links = Array.from(
-        document.querySelectorAll(
-          '.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open'
-        )
-      );
-      handleLinks(links, projectsParsed);
+    if (onPrShow(hrefArr, coveredProject)) {
+      const jiraLinks = getJiraLinks(document, projectsParsed, 'id');
+      handlePrShowLinks(jiraLinks);
+    } else if (onPrList(hrefArr, coveredProject)) {
+      const prLinks = Array.from(document.querySelectorAll(prLinksClass));
+      await handlePrListLinks(prLinks, projectsParsed);
     }
-  };
+    return Promise.resolve();
+  }
 
-  setInterval(mainScript, 500);
+  function runScript() {
+    mainScript().then(() => {
+      setTimeout(runScript, 500);
+    });
+  }
+
+  runScript();
 });
+
+function getHrefArr() {
+  return window.location.pathname.split('/').slice(1);
+}
+
+function onPrShow(hrefArr, coveredProject) {
+  return (
+    hrefArr[2] === 'pull' &&
+    coveredProject &&
+    !document.querySelector(gitHubJiraLinkAId)
+  );
+}
+
+function onPrList(hrefArr, coveredProject) {
+  return (
+    hrefArr[2] === 'pulls' &&
+    coveredProject &&
+    !document.querySelector(gitHubJiraLinkAClass)
+  );
+}
 
 function getCoveredProject(hrefArr, projectsParsed) {
   return projectsParsed.find(
@@ -103,39 +77,11 @@ function getCoveredProject(hrefArr, projectsParsed) {
   );
 }
 
-async function handleLinks(links, projectsParsed) {
-  if (links.length) {
-    const [link] = links;
-    const href = link.getAttribute('href');
-    if (!fetchedPrs[href]) {
-      fetchedPrs[href] = true;
-      const res = await fetch(`https://github.com${href}`);
-      const text = await res.text();
-      const htmlDoc = parser.parseFromString(text, 'text/html');
-      const jiraLinks = getJiraLinks(htmlDoc, projectsParsed);
-      const sliced = links.slice(1);
-      jiraLinks.forEach(jiraLink => {
-        const parentElement = link.parentElement;
-        const nextNextNextSibling = link.nextSibling.nextSibling.nextSibling;
-        parentElement.insertBefore(jiraLink, nextNextNextSibling);
-      });
-      handleLinks(sliced, projectsParsed);
-    }
-  }
-}
-
-function getJiraLinks(htmlDoc, projectsParsed) {
-  const partialDiscussionHeader = htmlDoc.querySelector(
-    '#partial-discussion-header'
-  );
-  const tableObjectItem =
-    partialDiscussionHeader &&
-    partialDiscussionHeader.querySelector('.TableObject-item--primary');
+function getJiraLinks(htmlDoc, projectsParsed, attributeKey) {
+  const header = htmlDoc.querySelector(headerId);
+  const tableObjectItem = header && header.querySelector(prInfoClass);
   const branchNameSpan =
-    tableObjectItem &&
-    tableObjectItem.querySelector(
-      '.commit-ref.css-truncate.user-select-contain.expandable.head-ref'
-    );
+    tableObjectItem && tableObjectItem.querySelector(branchNameSpanClass);
   const branchName = branchNameSpan && branchNameSpan.getAttribute('title');
   const hrefArr = getHrefArr();
   const coveredProject = getCoveredProject(hrefArr, projectsParsed);
@@ -155,14 +101,51 @@ function getJiraLinks(htmlDoc, projectsParsed) {
     }.atlassian.net/browse/${jiraNumber}`;
 
     const aEl = document.createElement('a');
-    aEl.setAttribute('class', 'gitHubJiraLink__a');
+    aEl.setAttribute(attributeKey, gitHubJiraLinkA);
     aEl.setAttribute('href', jiraUrl);
     aEl.setAttribute('target', '_blank');
     aEl.innerHTML = `JIRA ${jiraNumber.toUpperCase()}`;
     const spanEl = document.createElement('span');
-    spanEl.setAttribute('class', 'gitHubJiraLink__span');
+    spanEl.setAttribute(attributeKey, gitHubJiraLinkSpan);
     spanEl.appendChild(aEl);
 
     return spanEl;
+  });
+}
+
+function handlePrShowLinks(jiraLinks) {
+  const header = document.querySelector(headerId);
+  const tableObjectItem = header && header.querySelector(prInfoClass);
+  jiraLinks.forEach(jiraLink => {
+    tableObjectItem.append(jiraLink);
+  });
+}
+
+function handlePrListLinks(prLinks, projectsParsed) {
+  return Promise.all(
+    prLinks.map(prLink => {
+      const href = prLink.getAttribute('href');
+      const cachedJiraLinks = jiraLinkCache.get(href);
+      if (cachedJiraLinks) {
+        insertJiraLinks(cachedJiraLinks, prLink);
+        return Promise.resolve();
+      }
+      return fetch(`https://github.com${href}`).then(response => {
+        response.text().then(responseText => {
+          const htmlDoc = parser.parseFromString(responseText, 'text/html');
+          const jiraLinks = getJiraLinks(htmlDoc, projectsParsed, 'class');
+          jiraLinkCache.set(href, jiraLinks);
+          insertJiraLinks(jiraLinks, prLink);
+        });
+      });
+    })
+  );
+}
+
+function insertJiraLinks(jiraLinks, prLink) {
+  jiraLinks.forEach(jiraLink => {
+    const parentElement = prLink.parentElement;
+    const nextNextNextSibling = prLink.nextSibling.nextSibling.nextSibling;
+    parentElement.insertBefore(jiraLink, nextNextNextSibling);
   });
 }
