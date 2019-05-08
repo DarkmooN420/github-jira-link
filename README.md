@@ -1,6 +1,6 @@
 # GitHub-Jira Link
 
-GitHub-Jira Link is a Chrome and Firefox extension that uses the branch name on a GitHub pull request page to add a link to the Jira issue corresponding to the pull request. In order for it to work, the branch name needs to contain the Jira ticket number in between slashes. For example, for the branch name `story/add-feature/ABC-123`, the extension will add a link to the Jira issue with ticket number `ABC-123`.
+GitHub-Jira Link is a Chrome and Firefox extension that uses the branch name on a GitHub pull request page to add a link to the Jira issue corresponding to the pull request. In order for it to work, the branch name needs to contain the Jira ticket number. For example, for the branch name `story/add-feature/ABC-123`, the extension will add a link to the Jira issue with ticket number `ABC-123`.
 
 ![GitHub-Jira Link](screenshot.png)
 

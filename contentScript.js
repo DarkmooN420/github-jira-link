@@ -85,21 +85,25 @@ function getJiraLinks(htmlDoc, projectsParsed, attributeKey) {
   const branchName = branchNameSpan && branchNameSpan.getAttribute('title');
   const hrefArr = getHrefArr();
   const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-  const jiraNumbers =
-    branchName &&
-    branchName
-      .split('/')
-      .filter(
-        fragment =>
-          fragment.slice(0, coveredProject.jiraPrefix.length).toUpperCase() ===
-          coveredProject.jiraPrefix.toUpperCase()
-      );
+  const regex = getRegex(coveredProject.jiraPrefix);
+  const jiraNumbers = branchName && branchName.match(regex);
+  return getJiraLinksFromJiraNumbers(jiraNumbers, attributeKey, coveredProject);
+}
+
+function getRegex(jiraPrefix) {
+  return new RegExp(`${jiraPrefix}(?:-| )\\d+`, 'gi');
+}
+
+function getJiraLinksFromJiraNumbers(
+  jiraNumbers,
+  attributeKey,
+  coveredProject
+) {
   if (!jiraNumbers || !jiraNumbers.length) return [];
   return jiraNumbers.map(jiraNumber => {
     const jiraUrl = `https://${
       coveredProject.jiraOrganization
     }.atlassian.net/browse/${jiraNumber}`;
-
     const aEl = document.createElement('a');
     aEl.setAttribute(attributeKey, gitHubJiraLinkA);
     aEl.setAttribute('href', jiraUrl);
@@ -125,11 +129,28 @@ function handlePrListLinks(prLinks, projectsParsed) {
   return Promise.all(
     prLinks.map(prLink => {
       const href = prLink.getAttribute('href');
+
       const cachedJiraLinks = jiraLinkCache.get(href);
       if (cachedJiraLinks) {
         insertJiraLinks(cachedJiraLinks, prLink);
         return Promise.resolve();
       }
+
+      const hrefArr = getHrefArr();
+      const coveredProject = getCoveredProject(hrefArr, projectsParsed);
+      const regex = getRegex(coveredProject.jiraPrefix);
+      const jiraNumbersFromInnerHtml = prLink.innerHTML.match(regex);
+      const jiraLinksFromInnerHtml = getJiraLinksFromJiraNumbers(
+        jiraNumbersFromInnerHtml,
+        'class',
+        coveredProject
+      );
+      if (jiraLinksFromInnerHtml.length) {
+        jiraLinkCache.set(href, jiraLinksFromInnerHtml);
+        insertJiraLinks(jiraLinksFromInnerHtml, prLink);
+        return Promise.resolve();
+      }
+
       return fetch(`https://github.com${href}`).then(response => {
         response.text().then(responseText => {
           const htmlDoc = parser.parseFromString(responseText, 'text/html');
