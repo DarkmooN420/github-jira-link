@@ -21,6 +21,8 @@ const branchNameSpanClass =
   '.commit-ref.css-truncate.user-select-contain.expandable.head-ref';
 const prLinksClass =
   '.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open';
+const firstCommentClass = '.d-block.comment-body.markdown-body.js-comment-body';
+const prTitleClass = '.js-issue-title';
 
 const jiraLinkCache = new Map();
 
@@ -78,15 +80,32 @@ function getCoveredProject(hrefArr, projectsParsed) {
 }
 
 function getJiraLinks(htmlDoc, projectsParsed, attributeKey) {
+  const hrefArr = getHrefArr();
+  const coveredProject = getCoveredProject(hrefArr, projectsParsed);
+  const regex = getRegex(coveredProject.jiraPrefix);
+
+  const prTitle = htmlDoc.querySelector(prTitleClass);
+  const prTitleJiraNumbers = (prTitle && prTitle.innerText.match(regex)) || [];
+
   const header = htmlDoc.querySelector(headerId);
   const tableObjectItem = header && header.querySelector(prInfoClass);
   const branchNameSpan =
     tableObjectItem && tableObjectItem.querySelector(branchNameSpanClass);
   const branchName = branchNameSpan && branchNameSpan.getAttribute('title');
-  const hrefArr = getHrefArr();
-  const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-  const regex = getRegex(coveredProject.jiraPrefix);
-  const jiraNumbers = branchName && branchName.match(regex);
+  const branchNameJiraNumbers = (branchName && branchName.match(regex)) || [];
+
+  const firstComment = htmlDoc.querySelector(firstCommentClass);
+  const firstCommentJiraNumbers =
+    (firstComment && firstComment.innerText.match(regex)) || [];
+
+  const jiraNumbers = [
+    ...new Set([
+      ...prTitleJiraNumbers,
+      ...branchNameJiraNumbers,
+      ...firstCommentJiraNumbers,
+    ]),
+  ];
+
   return getJiraLinksFromJiraNumbers(jiraNumbers, attributeKey, coveredProject);
 }
 
