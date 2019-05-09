@@ -104,9 +104,9 @@ function getJiraLinks(htmlDoc, projectsParsed, attributeKey, skipPrTitle) {
 
   const jiraNumbers = [
     ...new Set([
-      ...prTitleJiraNumbers,
-      ...branchNameJiraNumbers,
-      ...firstCommentJiraNumbers,
+      ...normalizeJiraNumbers(prTitleJiraNumbers),
+      ...normalizeJiraNumbers(branchNameJiraNumbers),
+      ...normalizeJiraNumbers(firstCommentJiraNumbers),
     ]),
   ];
 
@@ -117,6 +117,14 @@ function getRegex(jiraPrefix) {
   return new RegExp(`${jiraPrefix}(?:-| )\\d+`, 'gi');
 }
 
+function normalizeJiraNumber(jiraNumber) {
+  return jiraNumber.replace(' ', '-').toUpperCase();
+}
+
+function normalizeJiraNumbers(jiraNumbers) {
+  return jiraNumbers.map(jiraNumber => normalizeJiraNumber(jiraNumber));
+}
+
 function getJiraLinksFromJiraNumbers(
   jiraNumbers,
   attributeKey,
@@ -124,7 +132,7 @@ function getJiraLinksFromJiraNumbers(
 ) {
   if (!jiraNumbers || !jiraNumbers.length) return [];
   return jiraNumbers.map(jiraNumber => {
-    jiraNumber = jiraNumber.replace(' ', '-').toUpperCase();
+    jiraNumber = normalizeJiraNumber(jiraNumber);
     const jiraUrl = `https://${
       coveredProject.jiraOrganization
     }.atlassian.net/browse/${jiraNumber}`;

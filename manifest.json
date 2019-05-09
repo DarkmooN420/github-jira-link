@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "description": "Adds links to Jira tickets on GitHub pull request pages",
   "name": "GitHub-Jira Link",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "icons": {
     "128": "icon_128.png"
   },
