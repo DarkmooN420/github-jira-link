@@ -79,13 +79,17 @@ function getCoveredProject(hrefArr, projectsParsed) {
   );
 }
 
-function getJiraLinks(htmlDoc, projectsParsed, attributeKey) {
+function getJiraLinks(htmlDoc, projectsParsed, attributeKey, skipPrTitle) {
   const hrefArr = getHrefArr();
   const coveredProject = getCoveredProject(hrefArr, projectsParsed);
   const regex = getRegex(coveredProject.jiraPrefix);
 
-  const prTitle = htmlDoc.querySelector(prTitleClass);
-  const prTitleJiraNumbers = (prTitle && prTitle.innerText.match(regex)) || [];
+  let prTitleJiraNumbers = [];
+  if (!skipPrTitle) {
+    const prTitle = htmlDoc.querySelector(prTitleClass);
+    prTitleJiraNumbers =
+      (prTitle && prTitle.innerText.match(regex)) || prTitleJiraNumbers;
+  }
 
   const header = htmlDoc.querySelector(headerId);
   const tableObjectItem = header && header.querySelector(prInfoClass);
@@ -120,6 +124,7 @@ function getJiraLinksFromJiraNumbers(
 ) {
   if (!jiraNumbers || !jiraNumbers.length) return [];
   return jiraNumbers.map(jiraNumber => {
+    jiraNumber = jiraNumber.replace(' ', '-').toUpperCase();
     const jiraUrl = `https://${
       coveredProject.jiraOrganization
     }.atlassian.net/browse/${jiraNumber}`;
@@ -155,12 +160,37 @@ function handlePrListLinks(prLinks, projectsParsed) {
         return Promise.resolve();
       }
 
+      const hrefArr = getHrefArr();
+      const coveredProject = getCoveredProject(hrefArr, projectsParsed);
+      const regex = getRegex(coveredProject.jiraPrefix);
+      const jiraNumbersFromInnerHtml = prLink.innerHTML.match(regex);
+      const jiraLinksFromInnerHtml = getJiraLinksFromJiraNumbers(
+        jiraNumbersFromInnerHtml,
+        'class',
+        coveredProject
+      );
+      if (jiraLinksFromInnerHtml.length) {
+        insertJiraLinks(jiraLinksFromInnerHtml, prLink);
+      }
+
       return fetch(`https://github.com${href}`).then(response => {
         response.text().then(responseText => {
           const htmlDoc = parser.parseFromString(responseText, 'text/html');
-          const jiraLinks = getJiraLinks(htmlDoc, projectsParsed, 'class');
-          jiraLinkCache.set(href, jiraLinks);
-          insertJiraLinks(jiraLinks, prLink);
+          const jiraLinks = getJiraLinks(
+            htmlDoc,
+            projectsParsed,
+            'class',
+            true
+          );
+          const differenceLinks = getDifference(
+            jiraLinks,
+            jiraLinksFromInnerHtml
+          );
+          jiraLinkCache.set(href, [
+            ...jiraLinksFromInnerHtml,
+            ...differenceLinks,
+          ]);
+          insertJiraLinks(differenceLinks, prLink);
         });
       });
     })
@@ -173,4 +203,15 @@ function insertJiraLinks(jiraLinks, prLink) {
     const nextNextNextSibling = prLink.nextSibling.nextSibling.nextSibling;
     parentElement.insertBefore(jiraLink, nextNextNextSibling);
   });
+}
+
+function getDifference(jiraLinks1, jiraLinks2) {
+  const jiraLinks2Hrefs = jiraLinks2.map(jiraLink => getJiraLinkHref(jiraLink));
+  return jiraLinks1.filter(
+    jiraLink => !jiraLinks2Hrefs.includes(getJiraLinkHref(jiraLink))
+  );
+}
+
+function getJiraLinkHref(jiraLink) {
+  return jiraLink.querySelector('a').getAttribute('href');
 }
