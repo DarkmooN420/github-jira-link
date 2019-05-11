@@ -7,14 +7,19 @@ try {
 
 const parser = new DOMParser();
 
-gitHubJiraLinkA = 'gitHubJiraLink__a';
-gitHubJiraLinkAId = `#${gitHubJiraLinkA}`;
-gitHubJiraLinkAClass = `.${gitHubJiraLinkA}`;
+const gitHubJiraLinkA = 'gitHubJiraLink__a';
+const gitHubJiraLinkAId = `#${gitHubJiraLinkA}`;
+const gitHubJiraLinkAClass = `.${gitHubJiraLinkA}`;
 
-gitHubJiraLinkSpan = 'gitHubJiraLink__span';
-gitHubJiraLinkSpanId = `#${gitHubJiraLinkSpan}`;
-gitHubJiraLinkSpanClass = `.${gitHubJiraLinkSpan}`;
+const gitHubJiraLinkSpan = 'gitHubJiraLink__span';
+const gitHubJiraLinkSpanId = `#${gitHubJiraLinkSpan}`;
+const gitHubJiraLinkSpanClass = `.${gitHubJiraLinkSpan}`;
 
+const gitHubJiraLinkMark = 'gitHubJiraLinkWasHere';
+const gitHubJiraLinkMarkId = `#${gitHubJiraLinkMark}`;
+
+const mainContainerClass =
+  '.container.new-discussion-timeline.experiment-repo-nav';
 const headerId = '#partial-discussion-header';
 const prInfoClass = '.TableObject-item--primary';
 const branchNameSpanClass =
@@ -30,15 +35,19 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
   const { projects } = options;
   const projectsParsed = JSON.parse(projects);
   async function mainScript() {
+    if (hasMark()) return Promise.resolve();
+
     const hrefArr = getHrefArr();
     const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-    if (onPrShow(hrefArr, coveredProject)) {
+
+    if (coveredProject && onPrShow(hrefArr)) {
       const jiraLinks = getJiraLinks(document, projectsParsed, 'id');
       handlePrShowLinks(jiraLinks);
-    } else if (onPrList(hrefArr, coveredProject)) {
+    } else if (coveredProject && onPrList(hrefArr)) {
       const prLinks = Array.from(document.querySelectorAll(prLinksClass));
       await handlePrListLinks(prLinks, projectsParsed);
     }
+
     return Promise.resolve();
   }
 
@@ -55,20 +64,12 @@ function getHrefArr() {
   return window.location.pathname.split('/').slice(1);
 }
 
-function onPrShow(hrefArr, coveredProject) {
-  return (
-    hrefArr[2] === 'pull' &&
-    coveredProject &&
-    !document.querySelector(gitHubJiraLinkAId)
-  );
+function onPrShow(hrefArr) {
+  return hrefArr[2] === 'pull';
 }
 
-function onPrList(hrefArr, coveredProject) {
-  return (
-    hrefArr[2] === 'pulls' &&
-    coveredProject &&
-    !document.querySelector(gitHubJiraLinkAClass)
-  );
+function onPrList(hrefArr) {
+  return hrefArr[2] === 'pulls';
 }
 
 function getCoveredProject(hrefArr, projectsParsed) {
@@ -77,6 +78,25 @@ function getCoveredProject(hrefArr, projectsParsed) {
       hrefArr[0] === project.gitHubOrganization &&
       hrefArr[1] === project.gitHubRepo
   );
+}
+
+function hasMark() {
+  const mainContainer = document.querySelector(mainContainerClass);
+  const mainContainerFirstChild = mainContainer.children[0];
+  return (
+    mainContainerFirstChild &&
+    mainContainerFirstChild.getAttribute('id') === gitHubJiraLinkMark
+  );
+}
+
+function leaveMark() {
+  const mainContainer = document.querySelector(mainContainerClass);
+  if (mainContainer) {
+    const markEl = document.createElement('div');
+    markEl.setAttribute('id', gitHubJiraLinkMark);
+    markEl.setAttribute('style', 'display: none');
+    mainContainer.prepend(markEl);
+  }
 }
 
 function getJiraLinks(htmlDoc, projectsParsed, attributeKey, skipPrTitle) {
@@ -155,10 +175,12 @@ function handlePrShowLinks(jiraLinks) {
   jiraLinks.forEach(jiraLink => {
     tableObjectItem.append(jiraLink);
   });
+
+  leaveMark();
 }
 
-function handlePrListLinks(prLinks, projectsParsed) {
-  return Promise.all(
+async function handlePrListLinks(prLinks, projectsParsed) {
+  const result = await Promise.all(
     prLinks.map(prLink => {
       const href = prLink.getAttribute('href');
 
@@ -203,6 +225,10 @@ function handlePrListLinks(prLinks, projectsParsed) {
       });
     })
   );
+
+  leaveMark();
+
+  return result;
 }
 
 function insertJiraLinks(jiraLinks, prLink) {
