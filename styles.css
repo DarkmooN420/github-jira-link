@@ -9,14 +9,14 @@
 #gitHubJiraLink__span {
   line-height: 20px;
   padding: 0 5px;
-  margin: 0 2px;
+  margin: 2px;
 }
 
 .gitHubJiraLink__span {
   line-height: 11px;
   padding: 0 2px;
   font-size: 12px;
-  margin: 0 1px;
+  margin: 1px 1px;
 }
 
 #gitHubJiraLink__a,

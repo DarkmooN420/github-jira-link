@@ -18,16 +18,27 @@ const gitHubJiraLinkSpanClass = `.${gitHubJiraLinkSpan}`;
 const gitHubJiraLinkMark = 'gitHubJiraLinkWasHere';
 const gitHubJiraLinkMarkId = `#${gitHubJiraLinkMark}`;
 
-const mainContainerClass =
-  '.container.new-discussion-timeline.experiment-repo-nav';
-const headerId = '#partial-discussion-header';
-const prInfoClass = '.TableObject-item--primary';
-const branchNameSpanClass =
-  '.commit-ref.css-truncate.user-select-contain.expandable.head-ref';
-const prLinksClass =
-  '.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open';
-const firstCommentClass = '.d-block.comment-body.markdown-body.js-comment-body';
-const prTitleClass = '.js-issue-title';
+const isMobile = getIsMobile();
+const mainContainerClass = isMobile
+  ? '.js-comment, .list.color-icons'
+  : '.container.new-discussion-timeline.experiment-repo-nav';
+const headerSelector = isMobile
+  ? '.discussion-header'
+  : '#partial-discussion-header';
+const prInfoClass = isMobile
+  ? '.pull-request-description-toggle.js-details-container.Details'
+  : '.TableObject-item--primary';
+const prTitleClass = isMobile ? 'discussion-title' : '.js-issue-title';
+const branchNameSpanClass = isMobile
+  ? '.css-truncate-target'
+  : '.commit-ref.css-truncate.user-select-contain.expandable.head-ref';
+const firstCommentClass = isMobile
+  ? '.discussion-comment.markdown-body.hide-when-editing'
+  : '.d-block.comment-body.markdown-body.js-comment-body';
+const prLinksClass = isMobile
+  ? '.list-item'
+  : '.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open';
+const bylineClass = '.byline';
 
 const jiraLinkCache = new Map();
 
@@ -39,7 +50,6 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
 
     const hrefArr = getHrefArr();
     const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-
     if (coveredProject && onPrShow(hrefArr)) {
       const jiraLinks = getJiraLinks(document, projectsParsed, 'id');
       handlePrShowLinks(jiraLinks);
@@ -59,6 +69,12 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
 
   runScript();
 });
+
+function getIsMobile() {
+  return Array.from(document.querySelector('body').classList).includes(
+    'page-responsive'
+  );
+}
 
 function getHrefArr() {
   return window.location.pathname.split('/').slice(1);
@@ -82,7 +98,7 @@ function getCoveredProject(hrefArr, projectsParsed) {
 
 function hasMark() {
   const mainContainer = document.querySelector(mainContainerClass);
-  const mainContainerFirstChild = mainContainer.children[0];
+  const mainContainerFirstChild = mainContainer && mainContainer.children[0];
   return (
     mainContainerFirstChild &&
     mainContainerFirstChild.getAttribute('id') === gitHubJiraLinkMark
@@ -111,11 +127,10 @@ function getJiraLinks(htmlDoc, projectsParsed, attributeKey, skipPrTitle) {
       (prTitle && prTitle.innerText.match(regex)) || prTitleJiraNumbers;
   }
 
-  const header = htmlDoc.querySelector(headerId);
-  const tableObjectItem = header && header.querySelector(prInfoClass);
-  const branchNameSpan =
-    tableObjectItem && tableObjectItem.querySelector(branchNameSpanClass);
-  const branchName = branchNameSpan && branchNameSpan.getAttribute('title');
+  const header = htmlDoc.querySelector(headerSelector);
+  const prInfo = header && header.querySelector(prInfoClass);
+  const branchNameSpan = prInfo && prInfo.querySelector(branchNameSpanClass);
+  const branchName = branchNameSpan && branchNameSpan.innerHTML;
   const branchNameJiraNumbers = (branchName && branchName.match(regex)) || [];
 
   const firstComment = htmlDoc.querySelector(firstCommentClass);
@@ -170,10 +185,10 @@ function getJiraLinksFromJiraNumbers(
 }
 
 function handlePrShowLinks(jiraLinks) {
-  const header = document.querySelector(headerId);
-  const tableObjectItem = header && header.querySelector(prInfoClass);
+  const header = document.querySelector(headerSelector);
+  const prInfo = header && header.querySelector(prInfoClass);
   jiraLinks.forEach(jiraLink => {
-    tableObjectItem.append(jiraLink);
+    prInfo.append(jiraLink);
   });
 
   leaveMark();
@@ -232,11 +247,23 @@ async function handlePrListLinks(prLinks, projectsParsed) {
 }
 
 function insertJiraLinks(jiraLinks, prLink) {
-  jiraLinks.forEach(jiraLink => {
+  if (isMobile) {
+    const byline = prLink.querySelector(bylineClass);
+    if (byline) {
+      jiraLinks.forEach(jiraLink => {
+        byline.innerHTML += ' ';
+        byline.append(jiraLink);
+      });
+    }
+  } else {
     const parentElement = prLink.parentElement;
     const nextNextNextSibling = prLink.nextSibling.nextSibling.nextSibling;
-    parentElement.insertBefore(jiraLink, nextNextNextSibling);
-  });
+    if (parentElement && nextNextNextSibling) {
+      jiraLinks.forEach(jiraLink => {
+        parentElement.insertBefore(jiraLink, nextNextNextSibling);
+      });
+    }
+  }
 }
 
 function getDifference(jiraLinks1, jiraLinks2) {
