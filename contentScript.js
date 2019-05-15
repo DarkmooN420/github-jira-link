@@ -35,6 +35,9 @@ const branchNameSpanClass = isMobile
 const firstCommentClass = isMobile
   ? '.discussion-comment.markdown-body.hide-when-editing'
   : '.d-block.comment-body.markdown-body.js-comment-body';
+const prLinksContainerClass = isMobile
+  ? '.list.color-icons'
+  : '.js-navigation-container.js-active-navigation-container';
 const prLinksClass = isMobile
   ? '.list-item'
   : '.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open';
@@ -46,7 +49,7 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
   const { projects } = options;
   const projectsParsed = JSON.parse(projects);
   async function mainScript() {
-    if (hasMark()) return Promise.resolve();
+    if (alreadyHasLink()) return Promise.resolve();
 
     const hrefArr = getHrefArr();
     const coveredProject = getCoveredProject(hrefArr, projectsParsed);
@@ -96,23 +99,20 @@ function getCoveredProject(hrefArr, projectsParsed) {
   );
 }
 
-function hasMark() {
-  const mainContainer = document.querySelector(mainContainerClass);
-  const mainContainerFirstChild = mainContainer && mainContainer.children[0];
-  return (
-    mainContainerFirstChild &&
-    mainContainerFirstChild.getAttribute('id') === gitHubJiraLinkMark
+function alreadyHasLink() {
+  const header = document.querySelector(headerSelector);
+  const prShowHasLink = Boolean(
+    header && header.querySelector(gitHubJiraLinkAId)
   );
-}
+  if (prShowHasLink) return true;
 
-function leaveMark() {
-  const mainContainer = document.querySelector(mainContainerClass);
-  if (mainContainer) {
-    const markEl = document.createElement('div');
-    markEl.setAttribute('id', gitHubJiraLinkMark);
-    markEl.setAttribute('style', 'display: none');
-    mainContainer.prepend(markEl);
-  }
+  const prLinksContainer = document.querySelector(prLinksContainerClass);
+  const prListHasLink = Boolean(
+    prLinksContainer && prLinksContainer.querySelector(gitHubJiraLinkAClass)
+  );
+  if (prListHasLink) return true;
+
+  return false;
 }
 
 function getJiraLinks(htmlDoc, projectsParsed, attributeKey, skipPrTitle) {
@@ -190,8 +190,6 @@ function handlePrShowLinks(jiraLinks) {
   jiraLinks.forEach(jiraLink => {
     prInfo.append(jiraLink);
   });
-
-  leaveMark();
 }
 
 async function handlePrListLinks(prLinks, projectsParsed) {
@@ -240,8 +238,6 @@ async function handlePrListLinks(prLinks, projectsParsed) {
       });
     })
   );
-
-  leaveMark();
 
   return result;
 }
