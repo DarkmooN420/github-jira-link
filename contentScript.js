@@ -8,15 +8,10 @@ try {
 const parser = new DOMParser();
 
 const gitHubJiraLinkA = 'gitHubJiraLink__a';
-const gitHubJiraLinkAId = `#${gitHubJiraLinkA}`;
 const gitHubJiraLinkAClass = `.${gitHubJiraLinkA}`;
 
 const gitHubJiraLinkSpan = 'gitHubJiraLink__span';
-const gitHubJiraLinkSpanId = `#${gitHubJiraLinkSpan}`;
 const gitHubJiraLinkSpanClass = `.${gitHubJiraLinkSpan}`;
-
-const gitHubJiraLinkMark = 'gitHubJiraLinkWasHere';
-const gitHubJiraLinkMarkId = `#${gitHubJiraLinkMark}`;
 
 const isMobile = getIsMobile();
 const mainContainerClass = isMobile
@@ -52,13 +47,16 @@ client.storage.sync.get({ projects: '[]' }, function(options) {
     if (alreadyHasLink()) return Promise.resolve();
 
     const hrefArr = getHrefArr();
-    const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-    if (coveredProject && onPrShow(hrefArr)) {
-      const jiraLinks = getJiraLinks(document, projectsParsed, 'id');
-      handlePrShowLinks(jiraLinks);
-    } else if (coveredProject && onPrList(hrefArr)) {
-      const prLinks = Array.from(document.querySelectorAll(prLinksClass));
-      await handlePrListLinks(prLinks, projectsParsed);
+    const coveredProjects = getCoveredProjects(hrefArr, projectsParsed);
+    for (let idx = 0; idx < coveredProjects.length; idx++) {
+      const coveredProject = coveredProjects[idx];
+      if (onPrShow(hrefArr)) {
+        const jiraLinks = getJiraLinks(document, projectsParsed, 'class');
+        handlePrShowLinks(jiraLinks);
+      } else if (coveredProject && onPrList(hrefArr)) {
+        const prLinks = Array.from(document.querySelectorAll(prLinksClass));
+        await handlePrListLinks(prLinks, projectsParsed);
+      }
     }
 
     return Promise.resolve();
@@ -91,8 +89,8 @@ function onPrList(hrefArr) {
   return hrefArr[2] === 'pulls';
 }
 
-function getCoveredProject(hrefArr, projectsParsed) {
-  return projectsParsed.find(
+function getCoveredProjects(hrefArr, projectsParsed) {
+  return projectsParsed.filter(
     project =>
       hrefArr[0] === project.gitHubOrganization &&
       hrefArr[1] === project.gitHubRepo
@@ -102,7 +100,7 @@ function getCoveredProject(hrefArr, projectsParsed) {
 function alreadyHasLink() {
   const header = document.querySelector(headerSelector);
   const prShowHasLink = Boolean(
-    header && header.querySelector(gitHubJiraLinkAId)
+    header && header.querySelector(gitHubJiraLinkAClass)
   );
   if (prShowHasLink) return true;
 
@@ -117,35 +115,40 @@ function alreadyHasLink() {
 
 function getJiraLinks(htmlDoc, projectsParsed, attributeKey, skipPrTitle) {
   const hrefArr = getHrefArr();
-  const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-  const regex = getRegex(coveredProject.jiraPrefix);
+  const coveredProjects = getCoveredProjects(hrefArr, projectsParsed);
+  return coveredProjects.reduce((final, coveredProject) => {
+    const regex = getRegex(coveredProject.jiraPrefix);
 
-  let prTitleJiraNumbers = [];
-  if (!skipPrTitle) {
-    const prTitle = htmlDoc.querySelector(prTitleClass);
-    prTitleJiraNumbers =
-      (prTitle && prTitle.innerText.match(regex)) || prTitleJiraNumbers;
-  }
+    let prTitleJiraNumbers = [];
+    if (!skipPrTitle) {
+      const prTitle = htmlDoc.querySelector(prTitleClass);
+      prTitleJiraNumbers =
+        (prTitle && prTitle.innerText.match(regex)) || prTitleJiraNumbers;
+    }
 
-  const header = htmlDoc.querySelector(headerSelector);
-  const prInfo = header && header.querySelector(prInfoClass);
-  const branchNameSpan = prInfo && prInfo.querySelector(branchNameSpanClass);
-  const branchName = branchNameSpan && branchNameSpan.innerHTML;
-  const branchNameJiraNumbers = (branchName && branchName.match(regex)) || [];
+    const header = htmlDoc.querySelector(headerSelector);
+    const prInfo = header && header.querySelector(prInfoClass);
+    const branchNameSpan = prInfo && prInfo.querySelector(branchNameSpanClass);
+    const branchName = branchNameSpan && branchNameSpan.innerHTML;
+    const branchNameJiraNumbers = (branchName && branchName.match(regex)) || [];
 
-  const firstComment = htmlDoc.querySelector(firstCommentClass);
-  const firstCommentJiraNumbers =
-    (firstComment && firstComment.innerText.match(regex)) || [];
+    const firstComment = htmlDoc.querySelector(firstCommentClass);
+    const firstCommentJiraNumbers =
+      (firstComment && firstComment.innerText.match(regex)) || [];
 
-  const jiraNumbers = [
-    ...new Set([
-      ...normalizeJiraNumbers(prTitleJiraNumbers),
-      ...normalizeJiraNumbers(branchNameJiraNumbers),
-      ...normalizeJiraNumbers(firstCommentJiraNumbers),
-    ]),
-  ];
+    const jiraNumbers = [
+      ...new Set([
+        ...normalizeJiraNumbers(prTitleJiraNumbers),
+        ...normalizeJiraNumbers(branchNameJiraNumbers),
+        ...normalizeJiraNumbers(firstCommentJiraNumbers),
+      ]),
+    ];
 
-  return getJiraLinksFromJiraNumbers(jiraNumbers, attributeKey, coveredProject);
+    return [
+      ...final,
+      ...getJiraLinksFromJiraNumbers(jiraNumbers, attributeKey, coveredProject),
+    ];
+  }, []);
 }
 
 function getRegex(jiraPrefix) {
@@ -166,11 +169,21 @@ function getJiraLinksFromJiraNumbers(
   coveredProject
 ) {
   if (!jiraNumbers || !jiraNumbers.length) return [];
-  return jiraNumbers.map(jiraNumber => {
+  return jiraNumbers.reduce((final, jiraNumber) => {
     jiraNumber = normalizeJiraNumber(jiraNumber);
-    const jiraUrl = `https://${
-      coveredProject.jiraOrganization
-    }.atlassian.net/browse/${jiraNumber}`;
+    const jiraUrl = `https://${coveredProject.jiraOrganization}.atlassian.net/browse/${jiraNumber}`;
+
+    const hrefArr = getHrefArr();
+    const prInfo = onPrShow(hrefArr) && document.querySelector(prInfoClass);
+    const prLinksContainer =
+      onPrList(hrefArr) && document.querySelector(prLinksContainerClass);
+    if (
+      (prInfo && prInfo.querySelector(`[href="${jiraUrl}"]`)) ||
+      (prLinksContainer &&
+        prLinksContainer.querySelector(`[href="${jiraUrl}"]`))
+    )
+      return final;
+
     const aEl = document.createElement('a');
     aEl.setAttribute(attributeKey, gitHubJiraLinkA);
     aEl.setAttribute('href', jiraUrl);
@@ -179,9 +192,8 @@ function getJiraLinksFromJiraNumbers(
     const spanEl = document.createElement('span');
     spanEl.setAttribute(attributeKey, gitHubJiraLinkSpan);
     spanEl.appendChild(aEl);
-
-    return spanEl;
-  });
+    return [...final, spanEl];
+  }, []);
 }
 
 function handlePrShowLinks(jiraLinks) {
@@ -204,38 +216,41 @@ async function handlePrListLinks(prLinks, projectsParsed) {
       }
 
       const hrefArr = getHrefArr();
-      const coveredProject = getCoveredProject(hrefArr, projectsParsed);
-      const regex = getRegex(coveredProject.jiraPrefix);
-      const jiraNumbersFromInnerHtml = prLink.innerHTML.match(regex);
-      const jiraLinksFromInnerHtml = getJiraLinksFromJiraNumbers(
-        jiraNumbersFromInnerHtml,
-        'class',
-        coveredProject
-      );
-      if (jiraLinksFromInnerHtml.length) {
-        insertJiraLinks(jiraLinksFromInnerHtml, prLink);
-      }
+      const coveredProjects = getCoveredProjects(hrefArr, projectsParsed);
+      for (let idx = 0; idx < coveredProjects.length; idx++) {
+        const coveredProject = coveredProjects[idx];
+        const regex = getRegex(coveredProject.jiraPrefix);
+        const jiraNumbersFromInnerHtml = prLink.innerHTML.match(regex);
+        const jiraLinksFromInnerHtml = getJiraLinksFromJiraNumbers(
+          jiraNumbersFromInnerHtml,
+          'class',
+          coveredProject
+        );
+        if (jiraLinksFromInnerHtml.length) {
+          insertJiraLinks(jiraLinksFromInnerHtml, prLink);
+        }
 
-      return fetch(`https://github.com${href}`).then(response => {
-        response.text().then(responseText => {
-          const htmlDoc = parser.parseFromString(responseText, 'text/html');
-          const jiraLinks = getJiraLinks(
-            htmlDoc,
-            projectsParsed,
-            'class',
-            true
-          );
-          const differenceLinks = getDifference(
-            jiraLinks,
-            jiraLinksFromInnerHtml
-          );
-          jiraLinkCache.set(href, [
-            ...jiraLinksFromInnerHtml,
-            ...differenceLinks,
-          ]);
-          insertJiraLinks(differenceLinks, prLink);
+        return fetch(`https://github.com${href}`).then(response => {
+          response.text().then(responseText => {
+            const htmlDoc = parser.parseFromString(responseText, 'text/html');
+            const jiraLinks = getJiraLinks(
+              htmlDoc,
+              projectsParsed,
+              'class',
+              true
+            );
+            const differenceLinks = getDifference(
+              jiraLinks,
+              jiraLinksFromInnerHtml
+            );
+            jiraLinkCache.set(href, [
+              ...jiraLinksFromInnerHtml,
+              ...differenceLinks,
+            ]);
+            insertJiraLinks(differenceLinks, prLink);
+          });
         });
-      });
+      }
     })
   );
 
