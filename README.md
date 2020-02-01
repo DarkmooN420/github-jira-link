@@ -1,3 +1,5 @@
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/m1010j/github-jira-link) 
+
 # GitHub-Jira Link
 
 GitHub-Jira Link is a Chrome and Firefox extension that adds links to Jira tickets on GitHub pull request pages. In order for it to work, Jira ticket number must appear in the branch name, the pull request title, or the first comment on the pull request page. For example, for the branch name `story/add-feature/ABC-123`, the extension will add a link to the Jira issue with ticket number `ABC-123`.
